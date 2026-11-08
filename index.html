@@ -3,7 +3,7 @@
 
 /* Karteninformationen im Deck-Builder */
 .deck-attacks{display:grid;gap:7px;margin-top:9px;text-align:left;width:100%}.deck-attack{background:#120f16;border:1px solid #65404d;border-radius:8px;padding:8px 7px;display:flex;flex-direction:column;gap:3px;overflow-wrap:anywhere}.deck-attack strong{font-size:12px;color:#ffe0e5;line-height:1.3}.deck-attack small{font-size:11px;color:#f5c7a0;line-height:1.4}.deck-attack em{font-size:11px;color:#d2c0cd;line-height:1.4;font-style:normal;margin-top:3px}.deck-card{height:100%;align-self:stretch}.deck-grid{align-items:stretch}@media(max-width:650px){.deck-attack{padding:6px 5px}.deck-attack strong{font-size:11px}.deck-attack small,.deck-attack em{font-size:10px}}
-</style></head><body><header><h1>DBD CARD BATTLE</h1><p>Version 0.5.1 · Online-Deckkampf (Beta)</p></header><main>
+</style></head><body><header><h1>DBD CARD BATTLE</h1><p>Version 0.5.2 · Online-Deckkampf (Beta)</p></header><main>
 <section class="panel"><h2>🃏 Mein Deck zusammenstellen</h2><p class="muted">Wähle genau 5 unterschiedliche Karten. Die Auswahl wird im Browser gespeichert. Killer und Überlebende können gemischt werden.</p><div class="controls"><strong id="deckCount">0 / 5</strong><button id="saveDeck" disabled>Deck speichern</button><button class="secondary" id="clearDeck">Auswahl löschen</button></div><div class="deck-grid" id="deckGrid"></div><p class="notice" id="deckMessage"></p></section>
 <section class="panel"><h2>🌐 Online-Kampf</h2><p class="muted">Zuerst die Datei <code>supabase_v05.sql</code> einmal im Supabase SQL Editor ausführen. Bestehende Version-0.4-Räume bleiben erhalten; neue Räume nutzen Version 0.5.</p><div class="controls"><input id="url" placeholder="https://DEIN-PROJEKT.supabase.co"><input id="key" placeholder="sb_publishable_..."><button id="connect">Verbinden</button></div><div class="controls"><button id="create" disabled>Raum mit meinem Deck erstellen</button><input id="roomCode" placeholder="Raumcode" maxlength="10"><button id="join" disabled>Mit meinem Deck beitreten</button></div><div id="onlineStatus" class="notice">Noch nicht verbunden.</div></section>
 <section class="panel hidden" id="gamePanel"><h2>⚔️ Online-Kampf</h2><div class="status" id="status">Warte auf Spieler ...</div><div class="arena"><section class="fighter" id="fighter0"><h3>Spieler 1</h3><div id="name0" class="name">Noch keine aktive Karte</div><img id="img0" class="cardpic hidden" alt="Aktive Karte"><p id="hp0"></p><div class="hpbar"><div id="bar0" class="hpfill"></div></div><p id="en0"></p><p id="benchLabel0" class="muted">Reservebank</p><div id="bench0" class="subcards"></div><p id="count0" class="muted"></p></section><section class="fighter" id="fighter1"><h3>Spieler 2</h3><div id="name1" class="name">Noch keine aktive Karte</div><img id="img1" class="cardpic hidden" alt="Aktive Karte"><p id="hp1"></p><div class="hpbar"><div id="bar1" class="hpfill"></div></div><p id="en1"></p><p id="benchLabel1" class="muted">Reservebank</p><div id="bench1" class="subcards"></div><p id="count1" class="muted"></p></section></div><h3>Meine Hand (Karte anklicken zum Ausspielen)</h3><div id="hand" class="subcards"></div><p id="handHint" class="muted"></p><div class="attack-controls"><div class="attack-box"><button id="energy">+1 Energie</button></div><div class="attack-box"><button id="a1">Angriff 1</button></div><div class="attack-box"><button id="a2">Angriff 2</button><div id="attackEffect" class="attack-effect" aria-live="polite">Wähle eine aktive Karte, um ihre Spezialfähigkeit zu sehen.</div></div><div class="attack-box"><button id="end" class="secondary">Zug beenden</button></div></div><h3>Kampfprotokoll</h3><div id="events"></div><p class="muted">Beta: Die ersten drei Karten des Decks bilden die Starthand. Jede Runde wird eine weitere Karte gezogen, solange Platz auf der Hand ist. Ein besiegter aktiver Charakter kann durch eine Hand- oder Reservekarte ersetzt werden. Alle Kampfaktionen werden auf dem Server geprüft.</p></section>
@@ -20,11 +20,11 @@ const cards=[
 {id:'jake',name:'Jake Park',hp:120,attacks:[['Sabotage',1,20],['Überlebensinstinkt',3,40]]},
 {id:'nea',name:'Nea Karlsson',hp:110,attacks:[['Flinke Bewegung',1,20],['Straßeninstinkt',3,40]]},
 {id:'hexe',name:'Die Hexe',hp:120,attacks:[['Klauenhieb',1,20],['Phantasm-Falle',4,30]]},
-{id:'wandler',name:'Der Wandler',hp:140,attacks:[['Messerstich',1,20],['Tödliches Stalking',1,15]]},
+{id:'wandler',name:'Der Wandler',hp:140,attacks:[['Messerstich',1,20],['Tödliches Stalking',1,10]]},
 {id:'jaegerin',name:'Die Jägerin',hp:130,attacks:[['Axtschlag',2,30],['Jagdbeilwurf',4,60]]},
 {id:'kannibale',name:'Der Kannibale',hp:160,attacks:[['Hammerhieb',1,20],['Kettensägen-Raserei',4,40]]},
 {id:'albtraum',name:'Der Albtraum',hp:110,attacks:[['Krallenhieb',2,30],['Traumfalle',4,0]]},
-{id:'kate',name:'Kate Denson',hp:150,attacks:[['Befreiungsschlag',1,20],['Hoffnungsmelodie',3,30]]},
+{id:'kate',name:'Laurie Strode',hp:150,attacks:[['Befreiungsschlag',1,20],['Hoffnungsmelodie',3,30]]},
 {id:'ace',name:'Ace Visconti',hp:120,attacks:[['Glückstreffer',0,10],['Alles oder Nichts',3,40]]},
 {id:'bill',name:'Bill Overbeck',hp:140,attacks:[['Veteranenschlag',1,20],['Letztes Gefecht',4,50]]},
 {id:'feng',name:'Feng Min',hp:100,attacks:[['Gamer-Schlag',0,30],['Schnelle Reflexe',3,30]]},
@@ -41,11 +41,11 @@ claudette:'🌿 Heilt Claudette oder eine andere eigene Karte um 30 Lebenspunkte
 jake:'🛡️ Der nächste gegnerische Angriff gegen Jake verursacht 20 Schaden weniger.',
 nea:'💨 40 % Chance: Nea weicht dem nächsten gegnerischen Angriff vollständig aus.',
 hexe:"50 % Chance: Phantasm-Falle verursacht 60 statt 30 Schaden.",
-wandler:"15 Schaden pro angelegter Energie (2 = 30, 4 = 60). Die Energie bleibt erhalten.",
+wandler:"10 Schaden pro angelegter Energie (2 = 20, 4 = 40). Die Energie bleibt erhalten.",
 jaegerin:"Nach dem Jagdbeilwurf verliert die Jägerin 2 angelegte Energien.",
 kannibale:"40 % Chance: Alle gegnerischen Handkarten verlieren zusätzlich 10 LP.",
 albtraum:"30 % Chance: Gegner schläft 3 eigene Züge und erhält von allen deinen Charakteren doppelten Schaden.",
-kate:"20 % Chance: Der nächste gegnerische Angriff macht 0 Schaden und Kate heilt sich um 20 LP.",
+kate:"20 % Chance: Der nächste gegnerische Angriff macht 0 Schaden und Laurie heilt sich um 20 LP.",
 ace:"Je 1/3 Chance: 40 Schaden, 80 Schaden oder 40 Schaden gegen Ace selbst.",
 bill:"40 % Chance: Bill heilt sich nach dem Angriff um 50 LP.",
 feng:"50 % Chance: Feng weicht dem nächsten gegnerischen Angriff vollständig aus.",
